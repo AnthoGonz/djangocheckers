@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <img id="red" src="{% static 'game/red.png' %}" hidden/>
+    <img id="blue" src="{% static 'game/blue.png' %}" hidden/>
+    <img id="red-king" src="{% static 'game/red-king.png' %}" hidden/>
+    <img id="blue-king" src="{% static 'game/blue-king.png' %}" hidden/>
+
+    <p>Current Turn:</p>
+    <h1 id="current_turn">{{ turn }}</h1>
+
+    <form action="/createGame/" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Create Game">
+    </form>
+
+    <form action = "/loadGame/" method = "post">
+        {% csrf_token %}
+        {{form }}
+        <input type="submit" value="Submit">
+    </form>
+
+    <canvas id="board" width="400" height="400" style="border:1px solid black;"></canvas>
+    <!--<script src="{% static 'game/game.js' %}"></script>-->
+    <script>
+
+        //Create Canvas object and define parameters
+        const canvas = document.getElementById("board");
+        const ctx = canvas.getContext("2d");
+        ctx.lineWidth = 2
+        canvas.style = "position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; margin: auto; border:2px solid black";
+
+        //Define variables
+        reoutline = []
+
+        let player = "{{ current_player }}";
+        let player_turn = "{{ turn }}";
+
+        const size = 50
+
+        var redPiece = document.getElementById("red");
+        var bluePiece = document.getElementById("blue")
+        var redKing = document.getElementById("red-king");
+        var blueKing= document.getElementById("blue-king")
+
+        let piecesArray = {{ pieces }}
+        let redPiecesArray = []
+        let bluePiecesArray = []
+        let kingArray = []
+
+        console.log(piecesArray)
+        console.log(redPiecesArray)
+        console.log(bluePiecesArray)
+
+        let canvasElem = document.querySelector("canvas");
+
+        //Auto fill Django form with the game ID
+        
+        document.getElementById("id_game").value = {{ game }};
+
+        //Reload
+
+        if (piecesArray.length == 0){
+            document.loadGame.submit();
+        }
+
+        //Intializes bluePiecesArry and redPiecesArray
+        for (let p = 0; p < piecesArray.length; p ++){
+
+            if (piecesArray[p][3] == 1){
+                kingArray.push(piecesArray[p])
+            }
+
+            if (piecesArray[p][2] == 0){
+                bluePiecesArray.push(piecesArray[p])
+            }else{
+                redPiecesArray.push(piecesArray[p])
+            }
+        }
+
+
+        drawBoard();
+
+        function getMousePosition(canvas, event) {
+            let rect = canvas.getBoundingClientRect();
+            let x = event.clientX - rect.left;
+            let y = event.clientY - rect.top;
+
+            let a = parseInt(x/ 50) + 1
+            let b = parseInt(y / 50) + 1
+
+            if (player == "blue"){
+                a = 9 - a
+                b = 9 - b
+            }
+            console.log(player_turn == player)
+
+            let input_currX = document.getElementById("id_currentPositionX").value
+            let input_currY = document.getElementById("id_currentPositionY").value
+            let input_movX = document.getElementById("id_nextPositionX").value
+            let input_movY = document.getElementById("id_nextPositionY").value
+
+            if (player_turn != player){
+                return false
+            }
+            if (input_currX == ""){
+                document.getElementById("id_currentPositionX").value = a
+                document.getElementById("id_currentPositionY").value = b
+
+                if (player == "red"){
+                    ctx.strokeStyle = 'yellow';
+                    ctx.strokeRect((a - 1) * size, (b - 1) * size, size, size)
+                    reoutline.push([a,b])
+                }else if (player == "blue"){
+                    ctx.strokeStyle = 'yellow';
+                    ctx.strokeRect(((9 - a) - 1) * size, ((9 - b) - 1) * size, size, size)
+                    reoutline.push([9 - a,9 - b])
+                }
+            }else if (input_currX != "" && input_movX == "" && checkMove([parseInt(input_currX),parseInt(input_currY)],[a,b])){
+                document.getElementById("id_nextPositionX").value = a
+                document.getElementById("id_nextPositionY").value = b
+
+                if (player == "red"){
+                    ctx.strokeStyle = 'green';
+                    ctx.strokeRect((a - 1) * size, (b - 1) * size, size, size)
+                    reoutline.push([a,b])
+                }else if (player == "blue"){
+                    ctx.strokeStyle = 'green';
+                    ctx.strokeRect(((9 - a) - 1) * size, ((9 - b) - 1) * size, size, size)
+                    reoutline.push([9 - a,9 - b])
+                }
+            }else{
+                console.log("Different Move!")
+                document.getElementById("id_currentPositionX").value = ""
+                document.getElementById("id_currentPositionY").value = ""
+                document.getElementById("id_nextPositionX").value = ""
+                document.getElementById("id_nextPositionY").value = ""
+                
+                for (let v = 0; v < reoutline.length; v ++){
+                    ctx.strokeStyle = 'black';
+                    ctx.strokeRect((reoutline[v][0] - 1) * size, (reoutline[v][1] - 1) * size, size, size)
+                }
+            }
+
+        }
+
+        function checkMove(curr, next){
+
+            roc = Math.abs(curr[0] - next[0]) / Math.abs(curr[1] - next[1])
+            distance = Math.abs(curr[0] - next[0])
+
+            distance_y = next[1] - curr[1]
+
+            console.log(distance_y)
+
+            if (distance_y > 0 && player == "red" && !searchForArray(kingArray,curr)){
+                return false
+            }if (distance_y < 0 && player == "blue" && !searchForArray(kingArray,curr)){
+                return false
+            }
+            if (player == "red" && searchForArray(bluePiecesArray,curr)){
+                return (false)
+            }else if (player == "blue" && searchForArray (redPiecesArray,curr)){
+                return (false)
+            }
+            if (Math.abs(roc) == 1){
+                if(searchForArray(piecesArray,next)){
+                    return(false)
+                }
+                if(distance > 1 && distance % 2 != 0){
+                    return(false)
+                }if (distance > 1 && distance % 2 == 0){
+                    x_change = (next[0] - curr[0]) / (Math.abs(next[0] - curr[0]))
+                    y_change = (next[1] - curr[1]) / (Math.abs(next[1] - curr[1]))
+                    for (var l = 1; l < distance; l+=2){
+                        check = [curr[0] + (l * x_change), curr[1] + (l * y_change)]
+                        if(searchForArray(piecesArray,check) == false){
+                            return (false)
+                        }
+                    }
+                }
+                return(true)
+            }else{
+                return (false)
+            }
+        }
+
+
+        function drawBoard(){
+            for (let x = 0; x < 9; x++){
+            for (let y = 0; y < 9; y++){
+                if (((x + y) % 2) == 0){
+                    ctx.fillStyle = "black";
+                }else{
+                    ctx.fillStyle = "white";
+                }
+                ctx.fillRect(x * size, y * size, size, size);
+
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(x * size, y * size, size, size);
+                
+            }
+            for (let i = 0; i < piecesArray.length; i ++){
+            plot_x = piecesArray[i][0]
+            plot_y = piecesArray[i][1]
+
+            if (player == "blue"){
+                plot_x = 9 - plot_x
+                plot_y = 9 - plot_y
+            }
+
+            if (piecesArray[i][2] == 0){
+                if (piecesArray[i][3] == 1){
+                    ctx.drawImage(blueKing, ((plot_x - 1 ) * size) + 2.5, ((plot_y - 1) * size) + 2.5);
+                }else{
+                    ctx.drawImage(bluePiece, ((plot_x - 1 ) * size) + 2.5, ((plot_y - 1) * size) + 2.5);
+                }
+            }else if (piecesArray[i][2] == 1){
+                if (piecesArray[i][3] == 1){
+                    ctx.drawImage(redKing, ((plot_x - 1) * size) + 2.5, ((plot_y - 1) * size) + 2.5);
+                }else{
+                    ctx.drawImage(redPiece, ((plot_x - 1) * size) + 2.5, ((plot_y - 1) * size) + 2.5);
+                }
+            }
+        }
+        }
+        }
+
+        function searchForArray(haystack, needle){
+            var i, j, current;
+            for(i = 0; i < haystack.length; ++i){
+                if(needle.length === (haystack[i].length - 2)){
+                current = haystack[i].slice(0,2);
+                for(j = 0; j < needle.length && needle[j] === current[j]; ++j);
+                if(j === needle.length)
+                    return true;
+                }
+            }
+            return false;
+            }
+
+        canvasElem.addEventListener("mousedown", function (e) {
+            getMousePosition(canvasElem, e);
+        }); 
+
+
+    </script>
+</body>
+</html>

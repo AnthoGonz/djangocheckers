@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <style>
+      body{
+          background-color: #11A7BB;
+      }
+      html,body,div{
+          font-family: "Playwrite DE Grund", cursive;
+          font-optical-sizing: auto;
+          font-weight: 400;
+          font-style: normal;
+      }
+      body,html,div,button{
+        font-family: "Roboto Mono", monospace;
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+  </style>
+  </head>
+  <body>
+    <div class="container w-100 text-center d-flex justify-content-center align-items-center" style="height:100vh;">
+        <div class="d-flex row flex-column border border-dark rounded p-5">
+            <h1>Django Checkers</h1>
+            <h5>by</h5>
+            <h5>Anthony Gonzalez</h5>
+            <div class="col p-3">
+              <form action="/createGame/" method="post" id="createGame" hidden>
+                  {% csrf_token %}
+                  {{new}}
+              </form>
+              <div class="w-100 d-flex flex-column align-items-center">
+              <button type="button" class="btn btn-primary m-2" id="new-gameFake" style="width:150px" style="display:none">New Game</button>
+            </div>
+            </div>
+          <div class="col p-3">
+            <form action = "/loadGame/" method = "post" id="load-form" hidden>
+                {% csrf_token %}
+                {{ form }}
+            </form>
+            <div class="w-100 d-flex flex-column align-items-center text-center">
+              <input type="text" class="form-control w-50 m-2" id="gameCode" aria-describedby="emailHelp" placeholder="Game Code" style="display:none" maxlength="5">
+              <button type="button" class="btn btn-primary m-2 text-center" id="load-game" style="width:150px">Load Game</button>
+              <input type="text" class="form-control w-50 m-2" id="newCode" aria-describedby="emailHelp" placeholder="Game Code" style="display:none" maxlength="5">
+              <button type="button" class="btn btn-primary m-2 text-center" id="new-game" onclick="newGame()" style="width:150px; display: none;">Create Game</button>
+            </div>
+          </div>
+          <div class="col p-3 text-center">
+            
+            <button type="button" class="btn btn-secondary m-2" id="sign-in" onclick="location.href = '/tutorial';" style="width:150px">Tutorial</button>
+          </div>
+          <div class="col p-3 text-center">
+            <button type="button" class="btn btn-secondary m-2" id="about" onclick="location.href = '/about';" style="width:150px">About</button>
+          </div>
+          <div class="d-flex w-100 justify-content-center">
+            <button type="button" class="btn btn-danger text-center" id="return" onclick="location.href = '/';" style="display:none; width: 150px;">Return to menu</button>
+          </div>
+          
+        </div>
+      </div>
+      <script>
+        function loadGame(){
+
+            if (document.getElementById("new-gameFake").style.display == "none"){
+              document.getElementById("id_gameCode").value = document.getElementById("gameCode").value
+              document.getElementById("load-form").submit()
+            }else{
+            document.getElementById("about").style.display = "none"
+            document.getElementById("sign-in").style.display = "none"
+            document.getElementById("new-gameFake").style.display = "none"
+            document.getElementById("gameCode").style.display = "flex"
+            document.getElementById("return").style.display = "flex"
+            }
+        }
+
+        function newGame(){
+
+            if (document.getElementById("load-game").style.display == "none"){
+              document.getElementById("id_gameCodeCreate").value = document.getElementById("newCode").value
+              document.getElementById("createGame").submit()
+            }else{
+            document.getElementById("load-game").style.display = "none"
+            document.getElementById("about").style.display = "none"
+            document.getElementById("sign-in").style.display = "none"
+            document.getElementById("new-gameFake").style.display = "none"
+            document.getElementById("newCode").style.display = "flex"
+            document.getElementById("new-game").style.display = "flex"
+            document.getElementById("return").style.display = "flex"
+            }
+            }
+        document.getElementById("load-game").addEventListener("click", loadGame);
+        document.getElementById("new-gameFake").addEventListener("click", newGame);
+      </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  </body>
+</html>
