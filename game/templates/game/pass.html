@@ -137,9 +137,16 @@
             }
         }
 
-        //Loads the game
+        //Checks if someone won, if not then load the game
 
-        drawBoard();
+        if (bluePiecesArray.length == 0){
+            alert ("Red wins!")
+        }
+        else if (redPiecesArray.length == 0){
+            alert("Blue wins!")
+        }else{
+            drawBoard();
+        }
 
         //Returns mouse position and assigns values to Django Forms
         function getMousePosition(canvas, event) {
