@@ -284,6 +284,12 @@
                         if(searchForArray(piecesArray,check) == false){
                             return (false)
                         }
+                        if(player == "red" && searchForArray(redPiecesArray, check)){
+                            return (false)
+                        }
+                        if(player == "blue" && searchForArray(bluePiecesArray, check)){
+                            return (false)
+                        }
                         pieces_to_delete += check[0].toString() + check[1].toString() + "#"
                     }
                 }
